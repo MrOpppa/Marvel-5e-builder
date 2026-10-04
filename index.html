@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marvel 5E Character Builder</title>
+<style>
+:root{
+  --bg:#0f1117; --panel:#171a22; --panel2:#1f2430; --line:#303746;
+  --text:#f4f6fb; --muted:#aeb7c7; --accent:#d63a34; --accent2:#f3b33d;
+  --good:#4fc38d; --bad:#ef6a67;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#0b0d12,#141824);color:var(--text)}
+header{position:sticky;top:0;z-index:10;background:rgba(15,17,23,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:1180px;margin:auto;padding:18px 22px;display:flex;align-items:center;gap:16px}
+.logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7e1311);display:grid;place-items:center;font-weight:900}
+.brand h1{font-size:18px;margin:0}.brand p{font-size:12px;color:var(--muted);margin:2px 0 0}
+.progress{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.progress button{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:8px 11px;border-radius:999px;cursor:pointer}
+.progress button.active{background:var(--accent);color:white;border-color:var(--accent)}
+main{max-width:1180px;margin:0 auto;padding:28px 22px 80px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px}
+@media(max-width:900px){main{grid-template-columns:1fr}.summary{position:static!important}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.step{display:none}.step.active{display:block}
+h2{margin:0 0 8px;font-size:28px}h3{margin:20px 0 10px}
+.sub{color:var(--muted);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:680px){.grid{grid-template-columns:1fr}}
+.choice{padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);cursor:pointer;transition:.18s}
+.choice:hover{transform:translateY(-2px);border-color:#596274}
+.choice.selected{outline:2px solid var(--accent);border-color:transparent}
+.choice h4{margin:0 0 6px;font-size:17px}.choice p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;background:#2b3240;color:#dce3ef;margin:5px 5px 0 0}
+label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+input,select{width:100%;background:#10131a;color:var(--text);border:1px solid var(--line);padding:11px 12px;border-radius:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.abilities{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:620px){.abilities{grid-template-columns:repeat(2,1fr)}}
+.ability{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.ability .score{font-size:34px;font-weight:800}.ability .mod{font-size:13px;color:var(--accent2)}
+.ability select,.ability input{margin-top:8px;text-align:center}
+.controls{display:flex;gap:10px;justify-content:space-between;margin-top:22px;flex-wrap:wrap}
+button.primary,button.secondary{padding:11px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+button.primary{background:var(--accent);color:white}button.secondary{background:#2a303d;color:white;border:1px solid var(--line)}
+.summary{position:sticky;top:92px;height:max-content}
+.summary h3{margin-top:0}.summary-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.summary-line span:first-child{color:var(--muted)}
+.notice{padding:12px 14px;border-left:4px solid var(--accent2);background:#252316;border-radius:8px;color:#e9e1c6;font-size:13px}
+.points{font-weight:800;font-size:18px}.ok{color:var(--good)}.warn{color:var(--bad)}
+.review{display:grid;gap:12px}.review section{background:var(--panel2);border:1px solid var(--line);padding:14px;border-radius:12px}
+.small{font-size:12px;color:var(--muted)}
+footer{max-width:1180px;margin:0 auto;padding:0 22px 40px;color:#788397;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">M5E</div>
+    <div class="brand"><h1>Marvel 5E Character Builder</h1><p>Unofficial campaign utility</p></div>
+    <div class="progress" id="progress"></div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <section class="step active" data-step="0">
+      <h2>Create your hero</h2>
+      <p class="sub">Start with identity details. You can change anything later.</p>
+      <div class="row">
+        <div><label>Character name</label><input id="name" placeholder="e.g. Nightstar" /></div>
+        <div><label>Player name</label><input id="player" placeholder="Optional" /></div>
+      </div>
+      <h3>Concept</h3>
+      <label>Short character concept</label>
+      <input id="concept" placeholder="Mutant weather-controller, Kree bruiser, mystic detective..." />
+      <div class="controls"><span></span><button class="primary" onclick="next()">Choose Species →</button></div>
+    </section>
+
+    <section class="step" data-step="1">
+      <h2>Choose a species</h2>
+      <p class="sub">Your species applies ability score increases and grants traits.</p>
+      <div class="grid" id="speciesGrid"></div>
+      <div class="controls"><button class="secondary" onclick="prev()">← Back</button><button class="primary" onclick="next()">Choose Class →</button></div>
+    </section>
+
+    <section class="step" data-step="2">
+      <h2>Choose a class</h2>
+      <p class="sub">Class defines how your character develops powers and features.</p>
+      <div class="grid" id="classGrid"></div>
+      <div class="controls"><button class="secondary" onclick="prev()">← Back</button><button class="primary" onclick="next()">Set Abilities →</button></div>
+    </section>
+
+    <section class="step" data-step="3">
+      <h2>Determine ability scores</h2>
+      <p class="sub">Use the standard array or 27-point buy. Species bonuses are added automatically.</p>
+      <div class="row">
+        <button class="secondary" onclick="useStandard()">Use standard array</button>
+        <button class="secondary" onclick="resetPointBuy()">Reset point buy</button>
+      </div>
+      <p class="notice">Point buy starts at 8. Scores 8–15 cost 0,1,2,3,4,5,7,9 points respectively. Maximum before species bonuses is 15.</p>
+      <h3>Base scores</h3>
+      <div class="abilities" id="abilityGrid"></div>
+      <div style="margin-top:14px">Points used: <span class="points" id="pointsUsed">0</span> / 27</div>
+      <div class="controls"><button class="secondary" onclick="prev()">← Back</button><button class="primary" onclick="next()">Review →</button></div>
+    </section>
+
+    <section class="step" data-step="4">
+      <h2>Review character</h2>
+      <p class="sub">A compact character-creation summary based on your selections.</p>
+      <div class="review" id="review"></div>
+      <div class="controls">
+        <button class="secondary" onclick="prev()">← Back</button>
+        <div>
+          <button class="secondary" onclick="saveLocal()">Save in browser</button>
+          <button class="primary" onclick="exportJSON()">Export JSON</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="card summary">
+    <h3>Character summary</h3>
+    <div class="summary-line"><span>Name</span><strong id="sName">Unnamed</strong></div>
+    <div class="summary-line"><span>Species</span><strong id="sSpecies">—</strong></div>
+    <div class="summary-line"><span>Class</span><strong id="sClass">—</strong></div>
+    <div class="summary-line"><span>Hit Die</span><strong id="sHit">—</strong></div>
+    <div class="summary-line"><span>Primary Ability</span><strong id="sPrimary">—</strong></div>
+    <div class="summary-line"><span>Level</span><strong>1</strong></div>
+    <div class="summary-line"><span>Proficiency</span><strong>+2</strong></div>
+    <p class="small" style="margin-top:14px">This prototype focuses on level-1 identity, species, class, and ability generation.</p>
+  </aside>
+</main>
+
+<footer>Unofficial fan-made tool. No Marvel or D&D branding is claimed or implied.</footer>
+
+<script>
+const species = [
+ {name:"Human", bonus:{STR:1,DEX:1,CON:1,INT:1,WIS:1,CHA:1}, text:"Versatile and adaptable.", traits:["All abilities +1","One feat","One skill proficiency","30 ft speed"]},
+ {name:"Kree", bonus:{STR:2,CON:1}, text:"Strong, militaristic extraterrestrials.", traits:["STR +2, CON +1","Kree Endurance","Sex-based additional trait","30 ft speed"]},
+ {name:"Mutant", bonus:{CHA:1}, chooseBonus:2, text:"Humans with the X-Gene and a primary mutation.", traits:["CHA +1","Two other abilities +1","Primary Mutation powerset level","30 ft speed"]},
+ {name:"Shi'ar", bonus:{STR:1,CON:1,WIS:1}, text:"Avian-descended humanoids of the Shi'ar Empire.", traits:["STR/CON/WIS +1","One superhuman powerset level","Technology proficiency","Cold vulnerability"]},
+ {name:"Skrull", bonus:{CHA:2}, chooseBonus:1, text:"Green-skinned shapeshifters.", traits:["CHA +2","One other ability +1","Shapeshifting powerset level","Deception proficiency"]}
+];
+
+const classes = [
+ {name:"Controller", hit:"d6", primary:"Wisdom", power:"Energy", desc:"Master of energy powers who refines control and versatility."},
+ {name:"Mystic", hit:"d6", primary:"Intelligence", power:"Mystical", desc:"Magic-user who develops spells, invocations, and mystical powers."},
+ {name:"Stalwart", hit:"d12", primary:"Constitution", power:"Physical", desc:"Physical powerhouse focused on raw strength, durability, and combat."},
+ {name:"Specialist", hit:"d10", primary:"Dexterity", power:"Specialization", desc:"Expert who relies on training, agility, skill, and focused specializations."}
+];
+
+const abilities = ["STR","DEX","CON","INT","WIS","CHA"];
+const pointCosts = {8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+
+let state = {
+ step:0, name:"", player:"", concept:"",
+ species:null, class:null,
+ scores:{STR:8,DEX:8,CON:8,INT:8,WIS:8,CHA:8},
+ mutantChoices:["DEX","WIS"], skrullChoice:"STR"
+};
+
+function renderProgress(){
+ const labels=["Identity","Species","Class","Abilities","Review"];
+ progress.innerHTML=labels.map((x,i)=>`<button class="${i===state.step?'active':''}" onclick="go(${i})">${i+1}. ${x}</button>`).join("");
+}
+function go(i){state.step=i;document.querySelectorAll('.step').forEach((e,j)=>e.classList.toggle('active',j===i));renderProgress();updateSummary();if(i===4)renderReview();}
+function next(){if(state.step===1 && !state.species){alert("Choose a species first.");return} if(state.step===2 && !state.class){alert("Choose a class first.");return} go(Math.min(4,state.step+1))}
+function prev(){go(Math.max(0,state.step-1))}
+
+function renderSpecies(){
+ speciesGrid.innerHTML=species.map(s=>`<div class="choice ${state.species===s.name?'selected':''}" onclick="pickSpecies('${s.name}')">
+ <h4>${s.name}</h4><p>${s.text}</p>${s.traits.map(t=>`<span class="badge">${t}</span>`).join("")}</div>`).join("");
+}
+function pickSpecies(n){state.species=n;renderSpecies();renderAbilities();updateSummary()}
+function renderClasses(){
+ classGrid.innerHTML=classes.map(c=>`<div class="choice ${state.class===c.name?'selected':''}" onclick="pickClass('${c.name}')">
+ <h4>${c.name}</h4><p>${c.desc}</p><span class="badge">Hit Die ${c.hit}</span><span class="badge">${c.primary}</span><span class="badge">${c.power}</span></div>`).join("");
+}
+function pickClass(n){state.class=n;renderClasses();updateSummary()}
+
+function speciesBonus(a){
+ const s=species.find(x=>x.name===state.species); if(!s)return 0;
+ let b=s.bonus[a]||0;
+ if(s.name==="Mutant" && state.mutantChoices.includes(a)) b+=1;
+ if(s.name==="Skrull" && state.skrullChoice===a) b+=1;
+ return b;
+}
+function mod(score){return Math.floor((score-10)/2)}
+function fmtMod(n){return n>=0?`+${n}`:`${n}`}
+function renderAbilities(){
+ abilityGrid.innerHTML=abilities.map(a=>{
+   const base=state.scores[a], total=base+speciesBonus(a);
+   return `<div class="ability">
+     <strong>${a}</strong>
+     <div class="score">${total}</div><div class="mod">Modifier ${fmtMod(mod(total))}</div>
+     <select onchange="setScore('${a}',this.value)">
+       ${[8,9,10,11,12,13,14,15].map(v=>`<option value="${v}" ${v===base?'selected':''}>Base ${v} (${pointCosts[v]} pts)</option>`).join("")}
+     </select>
+     <div class="small">${speciesBonus(a)?`Species bonus +${speciesBonus(a)}`:`No species bonus`}</div>
+   </div>`
+ }).join("");
+ let used=abilities.reduce((sum,a)=>sum+pointCosts[state.scores[a]],0);
+ pointsUsed.textContent=used;
+ pointsUsed.className="points "+(used<=27?"ok":"warn");
+}
+function setScore(a,v){state.scores[a]=+v;renderAbilities();updateSummary()}
+function resetPointBuy(){abilities.forEach(a=>state.scores[a]=8);renderAbilities()}
+function useStandard(){
+ const arr=[15,14,13,12,10,8];
+ const pref = state.class==="Controller" ? ["WIS","CON","DEX","INT","CHA","STR"] :
+              state.class==="Mystic" ? ["INT","CON","DEX","WIS","CHA","STR"] :
+              state.class==="Stalwart" ? ["CON","STR","DEX","WIS","CHA","INT"] :
+              state.class==="Specialist" ? ["DEX","CON","INT","WIS","CHA","STR"] :
+              abilities;
+ pref.forEach((a,i)=>state.scores[a]=arr[i]);renderAbilities()
+}
+function updateSummary(){
+ state.name=name.value; state.player=player.value; state.concept=concept.value;
+ sName.textContent=state.name||"Unnamed"; sSpecies.textContent=state.species||"—"; sClass.textContent=state.class||"—";
+ const c=classes.find(x=>x.name===state.class); sHit.textContent=c?c.hit:"—"; sPrimary.textContent=c?c.primary:"—";
+}
+function renderReview(){
+ updateSummary();
+ const s=species.find(x=>x.name===state.species), c=classes.find(x=>x.name===state.class);
+ const rows=abilities.map(a=>`${a} ${state.scores[a]+speciesBonus(a)} (${fmtMod(mod(state.scores[a]+speciesBonus(a)))})`).join(" • ");
+ review.innerHTML=`
+ <section><strong>${state.name||"Unnamed Hero"}</strong><div class="small">${state.concept||"No concept entered"}</div></section>
+ <section><strong>${state.species}</strong><div class="small">${s.traits.join(" • ")}</div></section>
+ <section><strong>${state.class}</strong><div class="small">Hit Die ${c.hit} • Primary Ability ${c.primary} • ${c.power} powers</div></section>
+ <section><strong>Ability Scores</strong><div class="small">${rows}</div></section>
+ <section><strong>Level 1</strong><div class="small">Proficiency Bonus +2</div></section>`;
+}
+function saveLocal(){updateSummary();localStorage.setItem("marvel5e-builder",JSON.stringify(state));alert("Saved in this browser.");}
+function exportJSON(){
+ updateSummary();
+ const exportState=JSON.parse(JSON.stringify(state));
+ exportState.finalScores={};
+ abilities.forEach(a=>exportState.finalScores[a]=state.scores[a]+speciesBonus(a));
+ const blob=new Blob([JSON.stringify(exportState,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=(state.name||"marvel5e-character").replace(/\s+/g,"_")+".json";a.click();URL.revokeObjectURL(url);
+}
+function loadSaved(){
+ const raw=localStorage.getItem("marvel5e-builder"); if(!raw)return;
+ try{const x=JSON.parse(raw);Object.assign(state,x);name.value=state.name||"";player.value=state.player||"";concept.value=state.concept||"";}catch(e){}
+}
+[name,player,concept].forEach(el=>el.addEventListener("input",updateSummary));
+loadSaved();renderSpecies();renderClasses();renderAbilities();renderProgress();updateSummary();
+</script>
+</body>
+</html>
